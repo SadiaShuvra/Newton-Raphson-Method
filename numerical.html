@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newton-Raphson Method | Numerical Analysis</title>
+    <script src="https://cdn.plot.ly/plotly-3.1.0.min.js" charset="utf-8"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e27;
+            min-height: 100vh;
+        }
+
+        /* Landing Page Styles */
+        .landing-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0e27 0%, #0f1435 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .animated-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .animated-bg::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveBackground 20s linear infinite;
+        }
+
+        @keyframes moveBackground {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(50px, 50px);
+            }
+        }
+
+        .landing-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .hero-section {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(15, 20, 53, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-section h1 {
+            font-size: 3.5em;
+            background: linear-gradient(135deg, #ffffff, #a0aec0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        .hero-section .subtitle {
+            font-size: 1.2em;
+            color: #cbd5e1;
+            margin-bottom: 30px;
+        }
+
+        .formula-card {
+            background: linear-gradient(135deg, #2d3748, #1a202c);
+            padding: 20px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-top: 20px;
+            border: 1px solid #4a5568;
+        }
+
+        .formula {
+            font-size: 1.5em;
+            font-family: 'Courier New', monospace;
+            color: #fbbf24;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .info-card {
+            background: rgba(15, 20, 53, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid #2d3748;
+            transition: all 0.3s;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            border-color: #fbbf24;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-card h3 {
+            color: #fbbf24;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .info-card p {
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .steps-container {
+            background: rgba(15, 20, 53, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            margin: 40px 0;
+            border: 1px solid #2d3748;
+        }
+
+        .steps-container h2 {
+            color: #fbbf24;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .step {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #0a0e27;
+        }
+
+        .step h4 {
+            color: #e2e8f0;
+            margin-bottom: 10px;
+        }
+
+        .step p {
+            color: #94a3b8;
+            font-size: 0.9em;
+        }
+
+        .example-equations {
+            background: rgba(15, 20, 53, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            margin: 40px 20px;
+            border: 1px solid #2d3748;
+            font-weight: bolder;
+        }
+
+        .example-equations h2 {
+            color: #fbbf24;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .equation-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .equation-item {
+            background: #0a0e27;
+            padding: 12px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            color: #fbbf24;
+            text-align: center;
+            border: 1px solid #2d3748;
+            font-size: medium;
+        }
+
+        .cta-button {
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .btn-visualize {
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            color: #0a0e27;
+            padding: 18px 50px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-visualize:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #f59e0b, #b45309);
+        }
+
+        /* Visualization Page Styles */
+        .visualization-page {
+            display: none;
+            min-height: 100vh;
+            background: #0a0e27;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #0f1435 0%, #0a0e27 100%);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #fbbf24;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            color: #fbbf24;
+        }
+
+        .btn-back {
+            background: #2d3748;
+            color: #fbbf24;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-back:hover {
+            background: #4a5568;
+            transform: translateX(-5px);
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 30px;
+            gap: 30px;
+        }
+
+        .input-panel {
+            flex: 1;
+            min-width: 300px;
+            background: #0f1435;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border: 1px solid #2d3748;
+        }
+
+        .graph-panel {
+            flex: 2;
+            min-width: 500px;
+            background: #0f1435;
+            border-radius: 15px;
+            padding: 15px;
+            border: 1px solid #2d3748;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #fbbf24;
+            font-size: 1.1em;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background: #0a0e27;
+            border: 2px solid #2d3748;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 10px rgba(251,191,36,0.3);
+        }
+
+        .solve-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            color: #0a0e27;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .solve-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(251,191,36,0.5);
+        }
+
+        .results {
+            margin-top: 25px;
+            padding: 20px;
+            background: #0a0e27;
+            border-radius: 10px;
+            border: 1px solid #2d3748;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #0f1435 0%, #0a0e27 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            border: 1px solid #2d3748;
+        }
+
+        .result-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #fbbf24;
+            font-family: 'Courier New', monospace;
+        }
+
+        .iteration-table {
+            margin-top: 20px;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #2d3748;
+            color: #e2e8f0;
+        }
+
+        th {
+            background: #1a202c;
+            color: #fbbf24;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: #1a1f3a;
+        }
+
+        .error-message {
+            background: rgba(220, 38, 38, 0.1);
+            color: #ef4444;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+            border: 1px solid #ef4444;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #2d3748;
+            border-top: 3px solid #fbbf24;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-text {
+            font-size: 0.85em;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+
+        .range-info {
+            background: #0a0e27;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            font-size: 0.85em;
+            color: #fbbf24;
+            border: 1px solid #2d3748;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            .graph-panel {
+                min-width: auto;
+            }
+            .hero-section h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Landing Page -->
+    <div class="landing-page" id="landingPage">
+        <div class="animated-bg"></div>
+        <div class="landing-content">
+            <div class="hero-section">
+                <h1>📐 Newton-Raphson Method</h1>
+                <p class="subtitle">Powerful Numerical Method for Finding Roots of Equations</p>
+                <div class="formula-card">
+                    <div class="formula">
+                        x<sub>n+1</sub> = x<sub>n</sub> - f(x<sub>n</sub>)/f'(x<sub>n</sub>)
+                    </div>
+                </div>
+            </div>
+
+            
+
+            
+
+            <div class="example-equations">
+                <h2> Example Equations You Can Solve</h2>
+                <div class="equation-list">
+                    
+                    <div class="equation-item">f(x)=x³ - 2cos(x) +1  </div>
+                    
+                    <div class="equation-item">f(x)=eˣ - 3 </div>
+                    <div class="equation-item">f(x)=x² - 3·cos(x) + 1 </div>
+                
+                </div>
+            </div>
+
+            <div class="cta-button">
+                <button class="btn-visualize" onclick="showVisualization()">
+                     Visualize Newton-Raphson Method
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualization Page -->
+    <div class="visualization-page" id="visualizationPage">
+        <div class="container">
+            <div class="header">
+                <button class="btn-back" onclick="showLanding()">
+                    ← Back to Home
+                </button>
+                <h1> Newton-Raphson Solver</h1>
+                <div style="width: 100px;"></div>
+            </div>
+
+            <div class="content">
+                <div class="input-panel">
+                    <div class="input-group">
+                        <label>📐 Equation f(x) =</label>
+                        <input type="text" id="equation" class="equation-input" value="x**2 - 2" >
+                        <div class="info-text">Supports: + - * / ** sin cos tan exp log sqrt</div>
+                    </div>
+
+                    <div class="input-group">
+                        <label> Initial guess x₀ (Optional)</label>
+                        <input type="text" id="x0" placeholder="Leave empty for auto-detection">
+                        
+                    </div>
+
+                    <button class="solve-btn" onclick="solveAndPlot()"> SOLVE EQUATION</button>
+
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p style="color: #94a3b8; margin-top: 10px;">Analyzing equation...</p>
+                    </div>
+
+                    <div class="error-message" id="errorMsg"></div>
+
+                    <div class="results" id="results" style="display: none;">
+                        <div class="result-card">
+                            <div style="font-size: 0.9em; color: #94a3b8;"> Root Found</div>
+                            <div class="result-value" id="rootValue"></div>
+                            <div style="margin-top: 8px;" id="convergenceInfo"></div>
+                        </div>
+                        
+                        <div class="iteration-table">
+                            <h4 style="color:#fbbf24"> Iteration Details (Tolerance = 0.0001)</h4>
+                            <table id="iterationTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>xₙ</th>
+                                        <th>f(xₙ)</th>
+                                        <th>Error</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="graph-panel">
+                    <div id="plot" style="height: 500px;"></div>
+                    <div class="range-info" id="rangeInfo">
+                         Graph Range: Calculating...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TOLERANCE = 0.0001;
+        const MAX_ITER = 50;
+
+        function showVisualization() {
+            console.log("Showing visualization");
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('visualizationPage').style.display = 'block';
+            
+            // Set default equation if empty
+            let eqInput = document.getElementById('equation');
+            if (!eqInput.value || eqInput.value.trim() === "") {
+                eqInput.value = "x**2 - 2";
+            }
+            
+            setTimeout(() => {
+                solveAndPlot();
+            }, 100);
+        }
+
+        function showLanding() {
+            document.getElementById('landingPage').style.display = 'block';
+            document.getElementById('visualizationPage').style.display = 'none';
+        }
+
+        function parseEquation(expr) {
+            return new Function('x', 
+                'try { ' +
+                'let sin = Math.sin; ' +
+                'let cos = Math.cos; ' +
+                'let tan = Math.tan; ' +
+                'let exp = Math.exp; ' +
+                'let log = Math.log; ' +
+                'let log10 = Math.log10; ' +
+                'let sqrt = Math.sqrt; ' +
+                'let abs = Math.abs; ' +
+                'let PI = Math.PI; ' +
+                'let E = Math.E; ' +
+                'return ' + expr + '; ' +
+                '} catch(e) { return NaN; }'
+            );
+        }
+
+        function numericalDerivative(f, x, h = 1e-6) {
+            return (f(x + h) - f(x - h)) / (2 * h);
+        }
+
+        function autoDetectInitialGuess(f) {
+            let testPoints = [-5, -4, -3, -2, -1, -0.5, 0, 0.5, 1, 2, 3, 4, 5];
+            let bestX = 1;
+            let bestF = Infinity;
+            
+            for (let x of testPoints) {
+                try {
+                    let fx = Math.abs(f(x));
+                    if (isFinite(fx) && fx < bestF) {
+                        bestF = fx;
+                        bestX = x;
+                    }
+                } catch(e) {}
+            }
+            return bestX;
+        }
+
+        function autoDetectRange(f, x0) {
+            let minX = x0 - 3;
+            let maxX = x0 + 3;
+            let step = 0.5;
+            
+            let validPoints = [];
+            for (let x = minX; x <= maxX; x += step) {
+                try {
+                    let y = f(x);
+                    if (isFinite(y) && Math.abs(y) < 100) {
+                        validPoints.push({x: x, y: y});
+                    }
+                } catch(e) {}
+            }
+            
+            if (validPoints.length > 0) {
+                let xs = validPoints.map(p => p.x);
+                minX = Math.min(...xs);
+                maxX = Math.max(...xs);
+            }
+            
+            let padding = Math.max(1, (maxX - minX) * 0.3);
+            minX = minX - padding;
+            maxX = maxX + padding;
+            minX = Math.max(minX, -12);
+            maxX = Math.min(maxX, 12);
+            
+            return { xmin: minX, xmax: maxX };
+        }
+
+        function newtonRaphson(f, df, x0) {
+            let iterations = [];
+            let x = x0;
+            
+            for (let i = 0; i < MAX_ITER; i++) {
+                let fx = f(x);
+                let dfx = df(x);
+                
+                if (Math.abs(dfx) < 1e-10) {
+                    throw new Error("Derivative too close to zero");
+                }
+                
+                let xNext = x - fx / dfx;
+                let error = Math.abs(xNext - x);
+                
+                iterations.push({
+                    iter: i,
+                    x: x,
+                    fx: fx,
+                    error: error
+                });
+                
+                if (error < TOLERANCE) {
+                    break;
+                }
+                
+                x = xNext;
+            }
+            
+            return iterations;
+        }
+
+        function formatNumber(num, decimals = 8) {
+            if (num === 0) return "0";
+            if (Math.abs(num) < 0.000001 && Math.abs(num) > 0) {
+                return num.toFixed(10).replace(/\.?0+$/, '');
+            }
+            return parseFloat(num.toFixed(decimals)).toString();
+        }
+
+        function solveAndPlot() {
+            console.log("Solving equation...");
+            document.getElementById('errorMsg').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            setTimeout(() => {
+                try {
+                    let equationStr = document.getElementById('equation').value;
+                    let x0Input = document.getElementById('x0').value;
+                    
+                    if (!equationStr || equationStr.trim() === "") {
+                        throw new Error("Please enter an equation");
+                    }
+                    
+                    let f;
+                    try {
+                        f = parseEquation(equationStr);
+                        let test1 = f(0);
+                        let test2 = f(1);
+                        if (isNaN(test1) || isNaN(test2)) {
+                            throw new Error("Invalid equation");
+                        }
+                    } catch (e) {
+                        throw new Error("Invalid equation! Use: x**2 - 2, sin(x), x**3 - 3*cos(x) + 1");
+                    }
+                    
+                    let x0;
+                    if (x0Input && x0Input.trim() !== "") {
+                        x0 = parseFloat(x0Input);
+                        if (isNaN(x0)) throw new Error("Invalid x₀ value");
+                    } else {
+                        x0 = autoDetectInitialGuess(f);
+                    }
+                    
+                    let df = (x) => numericalDerivative(f, x);
+                    let iterations = newtonRaphson(f, df, x0);
+                    
+                    if (iterations.length === 0) {
+                        throw new Error("Could not converge to a root");
+                    }
+                    
+                    let finalRoot = iterations[iterations.length - 1].x;
+                    let range = autoDetectRange(f, finalRoot);
+                    
+                    document.getElementById('rangeInfo').innerHTML = 
+                        `📊 Graph Range: x ∈ [${formatNumber(range.xmin, 2)}, ${formatNumber(range.xmax, 2)}] | ` +
+                        `Starting x₀ = ${formatNumber(x0, 4)} | Tolerance = 0.0001`;
+                    
+                    displayResults(iterations);
+                    createPlot(f, df, iterations, range.xmin, range.xmax, equationStr, x0);
+                    
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('results').style.display = 'block';
+                    
+                } catch (error) {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('errorMsg').innerHTML = '❌ ' + error.message;
+                    document.getElementById('errorMsg').style.display = 'block';
+                    console.error(error);
+                }
+            }, 100);
+        }
+
+        function displayResults(iterations) {
+            let lastIter = iterations[iterations.length - 1];
+            let root = lastIter.x;
+            
+            document.getElementById('rootValue').innerHTML = `${formatNumber(root, 10)}`;
+            document.getElementById('convergenceInfo').innerHTML = `
+                <span style="background: #2d3748; padding: 5px 10px; border-radius: 5px; font-size: 0.9em; color: #fbbf24;">
+                    ✅ Converged in ${iterations.length} iterations | Final error = ${formatNumber(lastIter.error, 8)} | Tolerance = 0.0001
+                </span>
+            `;
+            
+            let tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            iterations.forEach((iter, idx) => {
+                let row = tableBody.insertRow();
+                row.insertCell(0).innerHTML = iter.iter + 1;
+                row.insertCell(1).innerHTML = formatNumber(iter.x, 8);
+                row.insertCell(2).innerHTML = formatNumber(iter.fx, 8);
+                row.insertCell(3).innerHTML = formatNumber(iter.error, 8);
+                
+                if (iter.error < TOLERANCE) {
+                    row.style.backgroundColor = '#1a202c';
+                }
+            });
+        }
+
+        function createPlot(f, df, iterations, xmin, xmax, equationStr, startX0) {
+            let xRange = [];
+            let step = (xmax - xmin) / 500;
+            for (let x = xmin; x <= xmax; x += step) {
+                xRange.push(x);
+            }
+            
+            let yRange = xRange.map(x => {
+                try { return f(x); } catch(e) { return NaN; }
+            });
+            
+            let traces = [];
+            
+            traces.push({
+                x: xRange,
+                y: yRange,
+                mode: 'lines',
+                name: `f(x) = ${equationStr}`,
+                line: { color: '#fbbf24', width: 3 },
+                hovertemplate: 'x: %{x:.4f}<br>f(x): %{y:.4f}<extra></extra>'
+            });
+            
+            traces.push({
+                x: [xmin, xmax],
+                y: [0, 0],
+                mode: 'lines',
+                name: 'y = 0',
+                line: { color: '#94a3b8', width: 1.5, dash: 'dash' },
+                showlegend: true
+            });
+            
+            traces.push({
+                x: [startX0],
+                y: [f(startX0)],
+                mode: 'markers',
+                name: `Starting point (x₀ = ${formatNumber(startX0, 4)})`,
+                marker: { color: '#10b981', size: 14, symbol: 'circle', line: { width: 2, color: '#fff' } },
+                hovertemplate: `START<br>x = ${formatNumber(startX0, 6)}<br>f(x) = ${formatNumber(f(startX0), 6)}<extra></extra>`
+            });
+            
+            let displayIters = iterations.slice(0, Math.min(6, iterations.length));
+            let colors = ['#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+            
+            displayIters.forEach((iter, idx) => {
+                let color = colors[idx % colors.length];
+                let x0 = iter.x;
+                let y0 = iter.fx;
+                
+                traces.push({
+                    x: [x0],
+                    y: [y0],
+                    mode: 'markers',
+                    name: `Iter ${iter.iter + 1}: x = ${formatNumber(x0, 6)}`,
+                    marker: { color: color, size: 10, symbol: 'circle' },
+                    hovertemplate: `Iteration ${iter.iter + 1}<br>x = ${formatNumber(x0, 8)}<br>f(x) = ${formatNumber(y0, 8)}<extra></extra>`,
+                    showlegend: idx === 0 || idx === displayIters.length - 1
+                });
+                
+                let slope = df(x0);
+                let tangentY = xRange.map(x => y0 + slope * (x - x0));
+                traces.push({
+                    x: xRange,
+                    y: tangentY,
+                    mode: 'lines',
+                    line: { color: color, width: 1.5, dash: 'dot' },
+                    showlegend: false,
+                    opacity: 0.4
+                });
+            });
+            
+            let finalRoot = iterations[iterations.length - 1].x;
+            traces.push({
+                x: [finalRoot],
+                y: [0],
+                mode: 'markers',
+                name: `ROOT = ${formatNumber(finalRoot, 8)}`,
+                marker: { color: '#fbbf24', size: 20, symbol: 'star', line: { width: 2, color: '#d97706' } },
+                hovertemplate: `ROOT<br>x = ${formatNumber(finalRoot, 10)}<br>f(x) = ${formatNumber(f(finalRoot), 10)}<extra></extra>`
+            });
+            
+            let layout = {
+                title: {
+                    text: `Newton-Raphson Method: ${equationStr} = 0<br><sub style="color:#94a3b8">Started at x₀ = ${formatNumber(startX0, 4)} | Converged in ${iterations.length} iterations</sub>`,
+                    font: { size: 14, color: '#e2e8f0' }
+                },
+                xaxis: {
+                    title: 'x',
+                    titlefont: { size: 13, color: '#94a3b8' },
+                    gridcolor: '#2d3748',
+                    zerolinecolor: '#fbbf24',
+                    range: [xmin, xmax],
+                    color: '#cbd5e1'
+                },
+                yaxis: {
+                    title: 'f(x)',
+                    titlefont: { size: 13, color: '#94a3b8' },
+                    gridcolor: '#2d3748',
+                    zerolinecolor: '#fbbf24',
+                    color: '#cbd5e1'
+                },
+                hovermode: 'closest',
+                legend: {
+                    x: 1.02,
+                    y: 1,
+                    xanchor: 'left',
+                    bgcolor: 'rgba(15,20,53,0.95)',
+                    bordercolor: '#2d3748',
+                    borderwidth: 1,
+                    font: { size: 9, color: '#cbd5e1' }
+                },
+                plot_bgcolor: '#0a0e27',
+                paper_bgcolor: '#0f1435',
+                height: 500,
+                margin: { t: 100, l: 60, r: 180, b: 60 }
+            };
+            
+            let config = {
+                responsive: true,
+                displayModeBar: true,
+                modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+                toImageButtonOptions: {
+                    format: 'png',
+                    filename: 'newton_raphson_solution',
+                    scale: 2
+                }
+            };
+            
+            Plotly.newPlot('plot', traces, layout, config);
+        }
+        
+        document.getElementById('equation').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') solveAndPlot();
+        });
+    </script>
+</body>
+</html>
